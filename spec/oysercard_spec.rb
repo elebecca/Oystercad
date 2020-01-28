@@ -11,7 +11,28 @@ describe Oystercard do
         subject.top_up(20)
         expect{ subject.deduct 3}.to change{ subject.balance }.by -3
     end
+
+    describe '#in_journey?' do
+        it "check if the custumer is in the journey" do
+            subject.touch_in
+            expect(subject.in_journey?).to eq true
+        end
+    end
     
+    describe '#touch_in' do
+        it 'check if the card touched in' do
+            expect{ subject.touch_in}.to change{subject.status}.from(false).to(true)
+        end
+    end
+
+    describe '#touch_out' do
+        it "check if the card touch out" do
+            subject.touch_in 
+            expect{ subject.touch_out}.to change{subject.status}.from(true).to(false)
+        end
+    end
+
+
     describe '#top_up' do
     
         it { is_expected.to respond_to(:top_up).with(1).argument }
