@@ -20,6 +20,7 @@ class Oystercard
         @status 
     end 
     def touch_in
+        fail 'Low balance' if @balance < 1
         @status = true
     end
     def touch_out

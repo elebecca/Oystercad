@@ -14,6 +14,7 @@ describe Oystercard do
 
     describe '#in_journey?' do
         it "check if the custumer is in the journey" do
+            subject.top_up(2)
             subject.touch_in
             expect(subject.in_journey?).to eq true
         end
@@ -21,18 +22,24 @@ describe Oystercard do
     
     describe '#touch_in' do
         it 'check if the card touched in' do
-            expect{ subject.touch_in}.to change{subject.status}.from(false).to(true)
+            subject.top_up(2)
+            expect{ subject.touch_in }.to change{subject.status}.from(false).to(true)
         end
     end
 
     describe '#touch_out' do
         it "check if the card touch out" do
+            subject.top_up(2)
             subject.touch_in 
-            expect{ subject.touch_out}.to change{subject.status}.from(true).to(false)
+            expect{ subject.touch_out }.to change{subject.status}.from(true).to(false)
         end
     end
-
-
+    describe '#touch_in' do
+        it 'raise and error if you reach the minimum balance' do
+            # minimum_balance = Oystercard::MINIMUM_BALANCE
+            expect{ subject.touch_in }.to raise_error 'Low balance'
+        end
+    end
     describe '#top_up' do
     
         it { is_expected.to respond_to(:top_up).with(1).argument }
@@ -45,6 +52,6 @@ describe Oystercard do
             maximum_balance = Oystercard::MAXIMUM_BALANCE
             subject.top_up(maximum_balance)
             expect{ subject.top_up 1 }.to raise_error 'Maximum balance exceeded'
-          end
+        end
     end
 end
