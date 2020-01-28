@@ -5,13 +5,6 @@ describe Oystercard do
         expect(subject.balance).to eq 0
     end
 
-    it { is_expected.to respond_to(:deduct).with(1).argument }
-
-    it 'deducts an amount from the balance' do
-        subject.top_up(20)
-        expect{ subject.deduct 3}.to change{ subject.balance }.by -3
-    end
-
     describe '#in_journey?' do
         it "check if the custumer is in the journey" do
             subject.top_up(2)
@@ -33,15 +26,20 @@ describe Oystercard do
             subject.touch_in 
             expect{ subject.touch_out }.to change{subject.status}.from(true).to(false)
         end
+        it "charge for the jorney" do
+            subject.top_up(2)
+            subject.touch_in 
+            expect{ subject.touch_out }.to change{subject.balance}.by(-1)
+        end
     end
+
     describe '#touch_in' do
         it 'raise and error if you reach the minimum balance' do
-            # minimum_balance = Oystercard::MINIMUM_BALANCE
             expect{ subject.touch_in }.to raise_error 'Low balance'
         end
     end
+
     describe '#top_up' do
-    
         it { is_expected.to respond_to(:top_up).with(1).argument }
 
         it 'can top up the balance' do
