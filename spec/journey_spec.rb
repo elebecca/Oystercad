@@ -3,98 +3,59 @@ require 'journey'
 describe Journey do
     let(:entry_station) { double :station }
     let(:exit_station) { double :station }
-    let(:journey){ {entry_station: entry_station, exit_station: exit_station} }
-    it "has a balance of 0 by default" do
-        expect(subject.balance).to eq 0
-    end
+    let(:subject) { Journey.new }
 
-    describe '#in_journey?' do
-        it "check if the custumer is in the journey" do
-            subject.top_up(2)
-            subject.touch_in("station")
-            expect(subject.in_journey?).to eq true
-        end
-    end
-    
-    describe '#touch_in' do
-        it 'check if the card touched in' do
-            subject.top_up(2)
-            expect{ subject.touch_in("station") }.to change{subject.status}.from(false).to(true)
+    describe "#exit_station" do
+        it 'records the exit station' do
+            expect(subject.exit(exit_station)).to eq exit_station
         end
 
-        it 'raise and error if you reach the minimum balance' do
-
-            expect{ subject.touch_in("station") }.to raise_error('Low balance')
-        end
-    end
-
-    describe '#touch_out' do
-        it "check if the card touch out" do
-            subject.top_up(2)
-            subject.touch_in("station")
-            expect{ subject.touch_out(exit_station) }.to change{subject.status}.from(true).to(false)
+        it 'sets the fare to the actual journey fare if entered AND exited' do
+            subject.enter(entry_station)
+            subject.exit(exit_station)
+            expect(subject.fare).to eq described_class::ACTUAL_FARE
         end
 
-        it "charge for the jorney" do
-            subject.top_up(2)
-            subject.touch_in("station")
-            expect{ subject.touch_out(exit_station) }.to change{subject.balance}.by(-1)
+        it 'keeps the penalty fare if you did not exit' do
+            subject.enter(entry_station)
+            expect(subject.fare).to eq described_class::PENALTY_FARE
+        end
+
+        it 'keeps the penalty fare if you did not enter' do
+            subject.exit(exit_station)
+            expect(subject.fare).to eq described_class::PENALTY_FARE
         end
     end
 
-    describe '#top_up' do
-        it { is_expected.to respond_to(:top_up).with(1).argument }
-
-        it 'can top up the balance' do
-            expect{ subject.top_up 1 }.to change{ subject.balance }.by 1
+    describe "#full_journey" do
+        it 'records the full journey' do
+            subject.enter(entry_station)
+            subject.exit(exit_station)
+            expect(subject.full_journey).to eq( {:a => entry_station, :b => exit_station} )
         end
 
-        it 'raises an error if the maximum balance is exceeded' do
-            maximum_balance = Journey::MAXIMUM_BALANCE
-            subject.top_up(maximum_balance)
-            expect{ subject.top_up 1 }.to raise_error 'Maximum balance exceeded'
+        it "returns nil upon no entry or exits" do
+            expect(subject.full_journey).to eq ( {:a => nil, :b => nil} )
+            subject.enter(entry_station)
+            expect(subject.full_journey).to eq ( {:a => entry_station, :b => nil} )
         end
     end
-    
-    it "store station in entry station" do
-        subject.top_up(2)
-        test = subject.touch_in("station")
-        expect(test).to eq "station"
-    end
-    it "store station in exit station" do
-        subject.top_up(2)
-        subject.touch_in("station")
-        test = subject.touch_out("station")
-        expect(test).to eq "station"
+
+    describe "#in_journey?" do
+        it 'is not in journey at the end' do
+            subject.exit(exit_station)
+            expect(subject).to_not be_in_journey
+        end
+
+        it 'is in journey before it reaches exit station' do
+            subject.enter(entry_station)
+            expect(subject).to be_in_journey
+        end
     end
 
-    it 'has an empty list of journeys by default' do
-        expect(subject.list_stations).to be_empty
-      end
-
-    it 'stores a journey' do
-      subject.top_up(Journey::MINIMUM_BALANCE)
-      subject.touch_in(entry_station)
-      subject.touch_out(exit_station)
-      expect(subject.list_stations).to include journey
+    describe "#fare" do
+        it 'sets the penalty fare by default' do
+            expect(subject.fare).to eq described_class::PENALTY_FARE
+        end
     end
-
-  describe '#fare' do
-    it "returns the minimum fare" do
-      subject.top_up(Journey::MINIMUM_BALANCE)
-      subject.touch_in(entry_station)
-      subject.touch_out(exit_station)
-      expect(subject.fare).to eq(Journey::FARE)
-    end
-    it "returns the penalty fare if no exit" do
-      subject.top_up(Journey::MINIMUM_BALANCE)
-      subject.touch_in(entry_station)
-      expect(subject.fare).to eq(Journey::PENALTY_FARE)
-    end
-    it "returns the penalty fare if no entry" do
-      subject.top_up(Journey::MINIMUM_BALANCE)
-      subject.touch_out(exit_station)
-      expect(subject.fare).to eq(Journey::PENALTY_FARE)
-    end
-  end
 end

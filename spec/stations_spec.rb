@@ -1,24 +1,19 @@
-require 'stations'
+require 'station'
 
 describe Station do
+  let(:name) { double :name }
+  let(:zone_number) { double :zone }
+  let(:subject) { Station.new(name, zone_number) }
 
-  subject {described_class.new(name:"happyland", zone: 10)}
-
-  it "knows the zone" do
-    expect(subject.zone).to eq(10)
+  describe '#name' do
+    it 'returns the name' do
+        expect(subject.name).to eq name
+    end
   end
-  it "knows the name" do
-    expect(subject.name).to eq "happyland"
-  end
-end
-describe Station do
 
-  subject {described_class.new(name:"Makers", zone: 2)}
-
-  it "knows the zone" do
-    expect(subject.zone).to eq(2)
-  end
-  it "knows the name" do
-    expect(subject.name).to eq "Makers"
+  describe '#zone' do
+    it 'returns the zone number' do
+        expect(subject.zone).to eq zone_number
+    end
   end
 end
